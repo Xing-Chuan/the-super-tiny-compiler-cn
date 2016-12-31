@@ -1,16 +1,16 @@
-var superTinyCompiler = require('./super-tiny-compiler');
-var assert            = require('assert');
+const {
+  tokenizer,
+  parser,
+  transformer,
+  codeGenerator,
+  compiler,
+} = require('./super-tiny-compiler');
+const assert = require('assert');
 
-var tokenizer     = superTinyCompiler.tokenizer;
-var parser        = superTinyCompiler.parser;
-var transformer   = superTinyCompiler.transformer;
-var codeGenerator = superTinyCompiler.codeGenerator;
-var compiler      = superTinyCompiler.compiler;
+const input  = '(add 2 (subtract 4 2))';
+const output = 'add(2, subtract(4, 2));';
 
-var input  = '(add 2 (subtract 4 2))';
-var output = 'add(2, subtract(4, 2));';
-
-var tokens = [
+const tokens = [
   { type: 'paren',  value: '('        },
   { type: 'name',   value: 'add'      },
   { type: 'number', value: '2'        },
@@ -22,7 +22,7 @@ var tokens = [
   { type: 'paren',  value: ')'        }
 ];
 
-var ast = {
+const ast = {
   type: 'Program',
   body: [{
     type: 'CallExpression',
@@ -44,7 +44,7 @@ var ast = {
   }]
 };
 
-var newAst = {
+const newAst = {
   type: 'Program',
   body: [{
     type: 'ExpressionStatement',

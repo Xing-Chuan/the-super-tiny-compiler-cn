@@ -1,4 +1,4 @@
-<a href="super-tiny-compiler.js"><img width="731" alt="THE SUPER TINY COMPILER" src="https://cloud.githubusercontent.com/assets/952783/14171276/ed7bf716-f6e6-11e5-96df-80a031c2769d.png"/></a>
+<a href="the-super-tiny-compiler.js"><img width="731" alt="THE SUPER TINY COMPILER" src="https://cloud.githubusercontent.com/assets/952783/14171276/ed7bf716-f6e6-11e5-96df-80a031c2769d.png"/></a>
 
 ***Welcome to The Super Tiny Compiler!***
 
@@ -8,7 +8,7 @@ written in easy to read JavaScript.
 Reading through the guided code will help you learn about how *most* compilers
 work from end to end.
 
-### [Want to jump into the code? Click here](super-tiny-compiler.js)
+### [Want to jump into the code? Click here](the-super-tiny-compiler.js)
 
 ---
 
@@ -27,7 +27,7 @@ the nerds are able to understand.
 
 ### Okay so where do I begin?
 
-Awesome! Head on over to the [super-tiny-compiler.js](super-tiny-compiler.js)
+Awesome! Head on over to the [the-super-tiny-compiler.js](the-super-tiny-compiler.js)
 file.
 
 ### I'm back, that didn't make sense
