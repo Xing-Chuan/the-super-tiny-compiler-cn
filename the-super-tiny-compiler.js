@@ -260,59 +260,49 @@
  */
 
 /**
- * We're gonna start off with our first phase of parsing, lexical analysis, with
- * the tokenizer.
- *
- * We're just going to take our string of code and break it down into an array
- * of tokens.
+ * 让我们从 parsing 的第一步开始吧，用 tokenizer 进行词法分析
+ * 
+ * 我们只是将字符串代码，拆分成下方的 tokens 数组
  *
  *   (add 2 (subtract 4 2))   =>   [{ type: 'paren', value: '(' }, ...]
  */
 
-// We start by accepting an input string of code, and we're gonna set up two
-// things...
+// 我们首先要接收 1 个字符串代码，并设置两个变量
 function tokenizer(input) {
 
-  // A `current` variable for tracking our position in the code like a cursor.
+  // `current` 变量用于溯源我们在代码中的位置，就像代码中存在虚拟光标一样
   let current = 0;
 
-  // And a `tokens` array for pushing our tokens to.
+  // `tokens` 数组用于收集 token
   let tokens = [];
 
-  // We start by creating a `while` loop where we are setting up our `current`
-  // variable to be incremented as much as we want `inside` the loop.
-  //
-  // We do this because we may want to increment `current` many times within a
-  // single loop because our tokens can be any length.
+  // 我们创建一个 `while` 循环来设置 `current`，我们根据需求来增加 current 的值
+  // 因为 token 长度不同，在 1 次循环中，current 可能增加多次
   while (current < input.length) {
 
-    // We're also going to store the `current` character in the `input`.
+    // 缓存 `input` 中的 `current` 字段
     let char = input[current];
 
-    // The first thing we want to check for is an open parenthesis. This will
-    // later be used for `CallExpression` but for now we only care about the
-    // character.
+    // 我们需要检测的第一个情况就是开括号，这在之后会被函数调用`CallExpression`所用到。但是
+    // 现在我们只需要关心字符即可。
     //
-    // We check to see if we have an open parenthesis:
+    // 我们检测是否有一个开括号
     if (char === '(') {
 
-      // If we do, we push a new token with the type `paren` and set the value
-      // to an open parenthesis.
+      // 如果字符为开括号，我们 push 1个新 token，type 为 `paren`，value 为 `(`
       tokens.push({
         type: 'paren',
         value: '(',
       });
 
-      // Then we increment `current`
+      // current 虚拟光标往前移动一步
       current++;
 
-      // And we `continue` onto the next cycle of the loop.
+      // 然后继续下个循环
       continue;
     }
 
-    // Next we're going to check for a closing parenthesis. We do the same exact
-    // thing as before: Check for a closing parenthesis, add a new token,
-    // increment `current`, and `continue`.
+    // 下面我们监测一下闭合括号，这里和前面一样，确认的话，新增 1 个 token，增加 current，继续下个循环
     if (char === ')') {
       tokens.push({
         type: 'paren',
@@ -322,83 +312,68 @@ function tokenizer(input) {
       continue;
     }
 
-    // Moving on, we're now going to check for whitespace. This is interesting
-    // because we care that whitespace exists to separate characters, but it
-    // isn't actually important for us to store as a token. We would only throw
-    // it out later.
-    //
-    // So here we're just going to test for existence and if it does exist we're
-    // going to just `continue` on.
+    // 我们现在要检测空格，这里很有趣，因为空格存在的意义是分离字符，实际上对于 token 的存储并不重要，我们这里略过它就行了
     let WHITESPACE = /\s/;
     if (WHITESPACE.test(char)) {
       current++;
       continue;
     }
 
-    // The next type of token is a number. This is different than what we have
-    // seen before because a number could be any number of characters and we
-    // want to capture the entire sequence of characters as one token.
+    // 下种 token 类型是数字，这里和前面不同，因为数字可能是连续的
     //
     //   (add 123 456)
     //        ^^^ ^^^
-    //        Only two separate tokens
+    //        只能分出两个 token
     //
-    // So we start this off when we encounter the first number in a sequence.
+    // 所以当我们遇到第一个数字时，进行下面的处理
     let NUMBERS = /[0-9]/;
     if (NUMBERS.test(char)) {
 
-      // We're going to create a `value` string that we are going to push
-      // characters to.
+      // 我们创建1个 `value` 变量来存储字符
       let value = '';
 
-      // Then we're going to loop through each character in the sequence until
-      // we encounter a character that is not a number, pushing each character
-      // that is a number to our `value` and incrementing `current` as we go.
+      // 我们不断向后循环，直到遇到的字符不是数字
       while (NUMBERS.test(char)) {
         value += char;
         char = input[++current];
       }
 
-      // After that we push our `number` token to the `tokens` array.
+      // 推送 1 个数字类型的 token 到 tokens
       tokens.push({ type: 'number', value });
 
-      // And we continue on.
+      // 继续下个循环
       continue;
     }
 
-    // We'll also add support for strings in our language which will be any
-    // text surrounded by double quotes (").
+    // 我们的语言也支持字符串，1 段被 `"` 包裹起来的文本
     //
     //   (concat "foo" "bar")
     //            ^^^   ^^^ string tokens
     //
-    // We'll start by checking for the opening quote:
+    // 我们开始做引号的检测
     if (char === '"') {
-      // Keep a `value` variable for building up our string token.
+      // 用 `value` 来收集字符串 token
       let value = '';
 
-      // We'll skip the opening double quote in our token.
+      // 我们跳过双括号本身，从后面 1 位开始
       char = input[++current];
 
-      // Then we'll iterate through each character until we reach another
-      // double quote.
+      // 向后迭代查找，直到找到另一个 `"`
       while (char !== '"') {
         value += char;
         char = input[++current];
       }
 
-      // Skip the closing double quote.
+      // 跳过闭合的双引号
       char = input[++current];
 
-      // And add our `string` token to the `tokens` array.
+      // 我们添加 string token 到 tokens
       tokens.push({ type: 'string', value });
 
       continue;
     }
 
-    // The last type of token will be a `name` token. This is a sequence of
-    // letters instead of numbers, that are the names of functions in our lisp
-    // syntax.
+    // 最后 1 种 token 是 `name` token，也是一个字母序列，在 lisp 中是函数名
     //
     //   (add 2 4)
     //    ^^^
@@ -408,25 +383,23 @@ function tokenizer(input) {
     if (LETTERS.test(char)) {
       let value = '';
 
-      // Again we're just going to loop through all the letters pushing them to
-      // a value.
+      // 我们遍历循环字母，添加到 value 变量
       while (LETTERS.test(char)) {
         value += char;
         char = input[++current];
       }
 
-      // And pushing that value as a token with the type `name` and continuing.
+      // 我们添加 `name` token 并继续循环
       tokens.push({ type: 'name', value });
 
       continue;
     }
 
-    // Finally if we have not matched a character by now, we're going to throw
-    // an error and completely exit.
+    // 最后我们进行语法校验，如果我们没有匹配到结果，则抛出错误，停止执行
     throw new TypeError('I dont know what this character is: ' + char);
   }
 
-  // Then at the end of our `tokenizer` we simply return the tokens array.
+  // `tokenizer` 结束时，我们返回 tokens
   return tokens;
 }
 
