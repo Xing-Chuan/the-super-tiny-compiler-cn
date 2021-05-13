@@ -23,7 +23,7 @@
 
 ### 好吧，那么我从哪里开始呢？
 
-非常好！打开[the-super-tiny-compiler.js](./the-super-tiny-compiler.js) 文件。
+非常好！打开 [the-super-tiny-compiler.js](./the-super-tiny-compiler.js) 文件。
 
 ### 我回来了，但是我还是不理解。
 

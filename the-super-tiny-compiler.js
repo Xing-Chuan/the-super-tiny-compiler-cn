@@ -411,20 +411,18 @@ function tokenizer(input) {
  */
 
 /**
- * For our parser we're going to take our array of tokens and turn it into an
- * AST.
+ * 现在我们尝试将 tokens 数组解析成 AST（抽象语法树）
  *
  *   [{ type: 'paren', value: '(' }, ...]   =>   { type: 'Program', body: [...] }
  */
 
-// Okay, so we define a `parser` function that accepts our array of `tokens`.
+// 我们定义 `parser` 函数来接收 `tokens`
 function parser(tokens) {
 
-  // Again we keep a `current` variable that we will use as a cursor.
+  // 我们还是创建 1 个 `current` 变量作为虚拟光标
   let current = 0;
 
-  // But this time we're going to use recursion instead of a `while` loop. So we
-  // define a `walk` function.
+  // 但是这次我们用递归代替 `while` 循环，所以我们创建 1 个 `walk` 函数
   function walk() {
 
     // Inside the walk function we start by grabbing the `current` token.
@@ -538,18 +536,16 @@ function parser(tokens) {
     throw new TypeError(token.type);
   }
 
-  // Now, we're going to create our AST which will have a root which is a
-  // `Program` node.
+  // 现在我们创建 1 个 `Program` AST 根节点
   let ast = {
     type: 'Program',
     body: [],
   };
 
-  // And we're going to kickstart our `walk` function, pushing nodes to our
-  // `ast.body` array.
+  // 然后我们启动 `walk` 函数，推送 nodes 到 `ast.body`
   //
-  // The reason we are doing this inside a loop is because our program can have
-  // `CallExpression` after one another instead of being nested.
+  // 我们在1个循环里做的原因，是因为 `CallExpression` 可能是多个，且互不相关
+  // 注：`CallExpression` 是函数调用表达式的意思
   //
   //   (add 2 2)
   //   (subtract 4 2)
