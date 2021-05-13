@@ -1,8 +1,6 @@
 
 > 这是 [the-super-tiny-compiler](https://github.com/jamiebuilds/the-super-tiny-compiler) 的中文版本
 
-[![The Super Tiny Compiler](https://cloud.githubusercontent.com/assets/952783/21579290/5755288a-cf75-11e6-90e0-029529a44a38.png)](the-super-tiny-compiler.js)
-
 ***欢迎来到 The Super Tiny Compiler!***
 
 这是一个包含了所有现代编译器重要组成部分的简化版编译器，使用简洁，易理解的 JavaScript 编写
