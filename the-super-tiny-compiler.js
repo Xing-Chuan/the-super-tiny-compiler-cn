@@ -647,9 +647,7 @@ function traverser(ast, visitor) {
  */
 
 /**
- * Next up, the transformer. Our transformer is going to take the AST that we
- * have built and pass it to our traverser function with a visitor and will
- * create a new ast.
+ * 接下来是 `transformer`，我们遍历 AST 节点树，通过 visitor 上的方法进行处理，生成新的 AST 树
  *
  * ----------------------------------------------------------------------------
  *   Original AST                     |   Transformed AST
@@ -687,34 +685,29 @@ function traverser(ast, visitor) {
  * ----------------------------------------------------------------------------
  */
 
-// So we have our transformer function which will accept the lisp ast.
+// 所以我们的 `transformer` 函数接收 lisp AST
 function transformer(ast) {
 
   // We'll create a `newAst` which like our previous AST will have a program
   // node.
+  // 我们创建 1 个 `newAst`，像前面的 AST 一样，有个 Program 的根节点
   let newAst = {
     type: 'Program',
     body: [],
   };
 
-  // Next I'm going to cheat a little and create a bit of a hack. We're going to
-  // use a property named `context` on our parent nodes that we're going to push
-  // nodes to their parent's `context`. Normally you would have a better
-  // abstraction than this, but for our purposes this keeps things simple.
-  //
-  // Just take note that the context is a reference *from* the old ast *to* the
-  // new ast.
+  // 接下来我们做 1 个的小小的 hack 写法，我们在旧 AST 上挂 1 个 _content 方法，用来存储新 AST 的引用，
+  // 只要记住它是一个引用就行了，通常可以有更好的抽象方法，这里我们尽量有简单的方法处理
   ast._context = newAst.body;
 
-  // We'll start by calling the traverser function with our ast and a visitor.
+  // 我们调用 traverser 函数，用 ast、visitor 函数作为参数
   traverser(ast, {
 
-    // The first visitor method accepts any `NumberLiteral`
+    // 第一个 visitor 方法用来处理 `NumberLiteral`
     NumberLiteral: {
-      // We'll visit them on enter.
+      // 我们将在访问到这个节点类型时被调用
       enter(node, parent) {
-        // We'll create a new node also named `NumberLiteral` that we will push to
-        // the parent context.
+        // 新节点也是叫 `NumberLiteral`，我们将它 push 到新的 AST 树上
         parent._context.push({
           type: 'NumberLiteral',
           value: node.value,
@@ -722,7 +715,7 @@ function transformer(ast) {
       },
     },
 
-    // Next we have `StringLiteral`
+    // 接下来处理 `StringLiteral`
     StringLiteral: {
       enter(node, parent) {
         parent._context.push({
@@ -732,12 +725,10 @@ function transformer(ast) {
       },
     },
 
-    // Next up, `CallExpression`.
+    // 现在轮到 `CallExpression` 了
     CallExpression: {
       enter(node, parent) {
-
-        // We start creating a new node `CallExpression` with a nested
-        // `Identifier`.
+        // 我们创建 1 个新语言的 `CallExpression` 表达式结构
         let expression = {
           type: 'CallExpression',
           callee: {
@@ -747,33 +738,28 @@ function transformer(ast) {
           arguments: [],
         };
 
-        // Next we're going to define a new context on the original
-        // `CallExpression` node that will reference the `expression`'s arguments
-        // so that we can push arguments.
+        // 现在我们定义 1 个新的 _context 在原始 `CallExpression` node 上，将想转换的 node 节点 expression.arguments 挂载上去
         node._context = expression.arguments;
 
-        // Then we're going to check if the parent node is a `CallExpression`.
-        // If it is not...
+        // 那么，我们确认一下父节点是否是 `CallExpression`
+        // 如果不是的话...
         if (parent.type !== 'CallExpression') {
 
-          // We're going to wrap our `CallExpression` node with an
-          // `ExpressionStatement`. We do this because the top level
-          // `CallExpression` in JavaScript are actually statements.
+          // 我们用 `ExpressionStatement` node 包裹 `CallExpression` node，
+          // 为什么这么做呢，因为在 JavaScript 语言中，顶层节点应该是个表达式声明
           expression = {
             type: 'ExpressionStatement',
             expression: expression,
-          };
+          }; 
         }
 
-        // Last, we push our (possibly wrapped) `CallExpression` to the `parent`'s
-        // `context`.
+        // 最后我们推送 `CallExpression` 到父节点的 _context 中，当然，它的父节点可能就是另一个函数调用
         parent._context.push(expression);
       },
     }
   });
 
-  // At the end of our transformer function we'll return the new ast that we
-  // just created.
+  // 最后我们返回新创建的AST
   return newAst;
 }
 
