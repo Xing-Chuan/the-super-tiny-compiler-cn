@@ -551,9 +551,7 @@ function parser(tokens) {
  */
 
 /**
- * So now we have our AST, and we want to be able to visit different nodes with
- * a visitor. We need to be able to call the methods on the visitor whenever we
- * encounter a node with a matching type.
+ * 现在我们有AST了，并且我们我们可以用访问者模式来访问不同的 node 节点，当我们遇到匹配的 type 时，调用 visitor 上不同的方法
  *
  *   traverse(ast, {
  *     Program: {
@@ -585,71 +583,59 @@ function parser(tokens) {
  *   });
  */
 
-// So we define a traverser function which accepts an AST and a
-// visitor. Inside we're going to define two functions...
+// 所以我们定义1个 traverser 函数来接收 AST 和 1个visitor，里面我们将要定义两个函数
 function traverser(ast, visitor) {
 
-  // A `traverseArray` function that will allow us to iterate over an array and
-  // call the next function that we will define: `traverseNode`.
+  // 1个 `traverseArray` 函数将允许我们遍历数组，我们下面还要定义 1 个 `traverseNode` 函数
   function traverseArray(array, parent) {
     array.forEach(child => {
       traverseNode(child, parent);
     });
   }
 
-  // `traverseNode` will accept a `node` and its `parent` node. So that it can
-  // pass both to our visitor methods.
+  // `traverseNode` 将接收 1 个 node 节点和它们的父 node
+  // 可以把它们两个传递给我们的 visitor 方法
   function traverseNode(node, parent) {
 
-    // We start by testing for the existence of a method on the visitor with a
-    // matching `type`.
+    // 初始时，看看node type是否有对应的 visitor 方法
     let methods = visitor[node.type];
 
-    // If there is an `enter` method for this node type we'll call it with the
-    // `node` and its `parent`.
+    // 如果有 enter 方法，我们就调用它，并传递两个参数
     if (methods && methods.enter) {
       methods.enter(node, parent);
     }
 
-    // Next we are going to split things up by the current node type.
+    // 接下来，我们根据当前 node type 的不同，需要区别处理
     switch (node.type) {
 
-      // We'll start with our top level `Program`. Since Program nodes have a
-      // property named body that has an array of nodes, we will call
-      // `traverseArray` to traverse down into them.
-      //
-      // (Remember that `traverseArray` will in turn call `traverseNode` so  we
-      // are causing the tree to be traversed recursively)
+      // 开始时，最顶层的结构是 `Program`，它有 1 个名为 `body` 的属性，
+      // 我们使用 `traverseArray` 递归处理所有子节点
       case 'Program':
         traverseArray(node.body, node);
         break;
 
-      // Next we do the same with `CallExpression` and traverse their `params`.
+      // 接下来，我们对 `CallExpression` 一样处理，循环它的 `params`，也就是下面的表达式体
       case 'CallExpression':
         traverseArray(node.params, node);
         break;
 
-      // In the cases of `NumberLiteral` and `StringLiteral` we don't have any
-      // child nodes to visit, so we'll just break.
+      // `NumberLiteral` 和 `StringLiteral`，它们下面已经没有子节点了，就不用额外处理了
       case 'NumberLiteral':
       case 'StringLiteral':
         break;
 
-      // And again, if we haven't recognized the node type then we'll throw an
-      // error.
+      // 如果没有触发上面的匹配，和之前一样抛出 1 个类型错误
       default:
         throw new TypeError(node.type);
     }
 
-    // If there is an `exit` method for this node type we'll call it with the
-    // `node` and its `parent`.
+    // 如果 visitor 上有 `exit` 方法，我们执行它
     if (methods && methods.exit) {
       methods.exit(node, parent);
     }
   }
 
-  // Finally we kickstart the traverser by calling `traverseNode` with our ast
-  // with no `parent` because the top level of the AST doesn't have a parent.
+  // 最后我们用 AST 作为参数启动 `traverseNode` 函数，初始时在最顶层，所以是没父节点的
   traverseNode(ast, null);
 }
 
