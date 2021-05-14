@@ -1,7 +1,7 @@
 {
-  "name": "the-super-tiny-compiler",
+  "name": "the-super-tiny-compiler-cn",
   "version": "1.0.0",
-  "author": "James Kyle <me@thejameskyle.com> (thejameskyle.com)",
+  "author": "James Kyle <me@thejameskyle.com> (thejameskyle.com), Xing-Chuan <xing-chuan@hotmail.com> (xing-chuan.com)",
   "license": "CC-BY-4.0",
   "main": "./the-super-tiny-compiler.js"
 }
