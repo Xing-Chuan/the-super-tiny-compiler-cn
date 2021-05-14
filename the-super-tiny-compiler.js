@@ -771,35 +771,27 @@ function transformer(ast) {
  */
 
 /**
- * Now let's move onto our last phase: The Code Generator.
- *
- * Our code generator is going to recursively call itself to print each node in
- * the tree into one giant string.
+ * 现在让我们聚焦在最后一步：代码生成
+ * 我们递归调用它自身的所有子节点，最终通过 AST 树生成 1 个巨大的字符串
  */
 
 function codeGenerator(node) {
 
-  // We'll break things down by the `type` of the `node`.
   switch (node.type) {
 
-    // If we have a `Program` node. We will map through each node in the `body`
-    // and run them through the code generator and join them with a newline.
+    // 如果是 1 个 `Program` 根 node. 我们遍历所有的子节点
     case 'Program':
       return node.body.map(codeGenerator)
         .join('\n');
 
-    // For `ExpressionStatement` we'll call the code generator on the nested
-    // expression and we'll add a semicolon...
+    // `ExpressionStatement` 是包裹层，我们在最后面加 1 个 `;`，继续处理它的 expression
     case 'ExpressionStatement':
       return (
         codeGenerator(node.expression) +
-        ';' // << (...because we like to code the *correct* way)
+        ';' // << (...因为我们想让它是正确的语法格式)
       );
 
-    // For `CallExpression` we will print the `callee`, add an open
-    // parenthesis, we'll map through each node in the `arguments` array and run
-    // them through the code generator, joining them with a comma, and then
-    // we'll add a closing parenthesis.
+    // 对于 `CallExpression`，我们将打印它的 `callee`，拼接 `(`，map遍历处理它的 `arguments`，最后再加上 `)`
     case 'CallExpression':
       return (
         codeGenerator(node.callee) +
@@ -809,19 +801,19 @@ function codeGenerator(node) {
         ')'
       );
 
-    // For `Identifier` we'll just return the `node`'s name.
+    // 对于 `Identifier`，我们返回 node 的 name 即可
     case 'Identifier':
       return node.name;
 
-    // For `NumberLiteral` we'll just return the `node`'s value.
+    // 对于 `NumberLiteral`，我们返回 node 的 value 即可
     case 'NumberLiteral':
       return node.value;
 
-    // For `StringLiteral` we'll add quotations around the `node`'s value.
+    // 对于 `NumberLiteral`，我们用 `""` 包裹 node 的 value 再返回
     case 'StringLiteral':
       return '"' + node.value + '"';
 
-    // And if we haven't recognized the node, we'll throw an error.
+    // 如果未匹配到处理规则，抛出类型错误
     default:
       throw new TypeError(node.type);
   }
@@ -835,8 +827,8 @@ function codeGenerator(node) {
  */
 
 /**
- * FINALLY! We'll create our `compiler` function. Here we will link together
- * every part of the pipeline.
+ * 最终，我们创造了 `compiler（编译器）` 函数.
+ * 这里，我们用这样的路径将它们串起来，这样更加直观
  *
  *   1. input  => tokenizer   => tokens
  *   2. tokens => parser      => ast
@@ -861,7 +853,7 @@ function compiler(input) {
  * ============================================================================
  */
 
-// Now I'm just exporting everything...
+// 现在，我们把所有方法导出
 module.exports = {
   tokenizer,
   parser,
