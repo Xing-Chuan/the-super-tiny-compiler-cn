@@ -68,6 +68,7 @@ traverse(ast, {
     }
   }
 })
+
 // 3.代码生成
 const output = generate(ast)  
 console.log('Input \n', code)
