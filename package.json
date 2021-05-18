@@ -3,5 +3,11 @@
   "version": "1.0.0",
   "author": "James Kyle <me@thejameskyle.com> (thejameskyle.com), Xing-Chuan <xing-chuan@hotmail.com> (xing-chuan.com)",
   "license": "CC-BY-4.0",
-  "main": "./the-super-tiny-compiler.js"
+  "main": "./the-super-tiny-compiler.js",
+  "devDependencies": {
+    "@babel/generator": "^7.14.3",
+    "@babel/parser": "^7.14.3",
+    "@babel/traverse": "^7.14.2",
+    "@babel/types": "^7.14.2"
+  }
 }
