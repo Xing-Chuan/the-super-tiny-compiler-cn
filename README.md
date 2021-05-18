@@ -1,5 +1,5 @@
 
-> 这是 [the-super-tiny-compiler](https://github.com/jamiebuilds/the-super-tiny-compiler) 的中文版本
+> 这是 [the-super-tiny-compiler](https://github.com/jamiebuilds/the-super-tiny-compiler) 的中文版本，并添加了 babel 的示例
 
 这是一个包含了所有现代编译器重要组成部分的简化版编译器，使用简洁，易理解的 JavaScript 编写
 
