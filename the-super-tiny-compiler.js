@@ -267,23 +267,23 @@
  *   (add 2 (subtract 4 2))   =>   [{ type: 'paren', value: '(' }, ...]
  */
 
-// 我们首先要接收 1 个字符串代码，并设置两个变量
+// 我们接收源码，并设置两个变量 current、tokens
 function tokenizer(input) {
 
-  // `current` 变量用于溯源我们在代码中的位置，就像代码中存在虚拟光标一样
+  // 词法分析需要从头到尾遍历代码，`current` 变量用于表示当前遍历的位置，就像虚拟光标一样
   let current = 0;
 
   // `tokens` 数组用于收集 token
   let tokens = [];
 
-  // 我们创建一个 `while` 循环来设置 `current`，我们根据需求来增加 current 的值
-  // 因为 token 长度不同，在 1 次循环中，current 可能增加多次
+  // 我们创建一个 `while` 循环来进行源码的遍历
+  // 因为 token 长度不同，在 1 次循环中，current 可能会增加多次
   while (current < input.length) {
 
     // 缓存 `input` 中的 `current` 字段
     let char = input[current];
 
-    // 我们需要检测的第一个情况就是开括号，这在之后会被函数调用`CallExpression`所用到。但是
+    // 我们需要检测的第一个情况就是开括号，这在之后会被函数调用 `CallExpression` 所用到。但是
     // 现在我们只需要关心字符即可。
     //
     // 我们检测是否有一个开括号
@@ -411,40 +411,43 @@ function tokenizer(input) {
  */
 
 /**
- * 现在我们尝试将 tokens 数组解析成 AST（抽象语法树）
+ * 我们尝试将 tokens 数组解析成 AST（抽象语法树）
  *
  *   [{ type: 'paren', value: '(' }, ...]   =>   { type: 'Program', body: [...] }
  */
 
-// 我们定义 `parser` 函数来接收 `tokens`
+// 我们定义 `parser` 函数来接收 tokenizer 产出的 `tokens`
 function parser(tokens) {
 
-  // 我们还是创建 1 个 `current` 变量作为虚拟光标
+  // 我们还是创建 `current` 变量来表示当前虚拟光标的位置
   let current = 0;
 
-  // 但是这次我们用递归代替 `while` 循环，所以我们创建 1 个 `walk` 函数
+  // 我们创建 AST 的根节点，`Program` 是 AST 的顶层节点
+  let ast = {
+    type: 'Program',
+    body: [],
+  };
+
+  // 我们会遇到函数嵌套这种情况，所以这次我们用递归代替 `while` 循环
   function walk() {
 
-    // 记录一下 walk 函数开始时的 token
+    // 提取虚拟光标位置的token
     let token = tokens[current];
 
-    // 我们会用不同的方式去处理 token，从 `number` 开始
-    //
-    // 我们检测是否是 `number` token
+    // 我们检测是否为 `number` 类型的 token
     if (token.type === 'number') {
 
       // 如果是 `number`，current +1
       current++;
 
-      // 我们返回 1 个 AST node 叫 `NumberLiteral`，并且设置值为 token 的 value
-      // 注：`NumberLiteral` 是数字字面量的意思
+      // 我们返回 1 个 AST node 叫 `NumberLiteral（数字字面量）`
       return {
         type: 'NumberLiteral',
         value: token.value,
       };
     }
 
-    // 如果是 string token，我们像 number 一样，创建 1 个 `StringLiteral` node
+    // 如果是 `string` token，我们像 `number` 一样，创建 1 个 `StringLiteral（字符串字面量）` node
     if (token.type === 'string') {
       current++;
 
@@ -460,12 +463,11 @@ function parser(tokens) {
       token.value === '('
     ) {
 
-      // current +1，跳过开括号， AST不关心它
+      // current +1，跳过开括号，我们不关心它
       token = tokens[++current];
 
       // 我们创建一个 type 为 `CallExpression` 的基础 node 节点，设置 name 为 token 的 value
       // 开括号后面就是函数名
-      // 注：params里装表达式
       let node = {
         type: 'CallExpression',
         name: token.value,
@@ -475,11 +477,11 @@ function parser(tokens) {
       // current +1，我们跳过函数名，直接看表达式
       token = tokens[++current];
 
-      // 为了收集 `CallExpression` 的 `params`，我们不断循环每个 token，直到遇到闭合括号
+      // 为了收集 `CallExpression` 的 `params`，我们往后查询每个 token，直到遇到闭合括号
       //
       // 这就是需要递归的时候。我们使用递归而不是试图直接分析可能有无限多层嵌套节点的参数。
       //
-      // 为了解释这个概念，以我们的lisp代码为例。你可以观察到 `add` 的参数是一个数字和一个嵌套
+      // 为了解释这个概念，以我们的 lisp 代码为例。你可以观察到 `add` 的参数是一个数字和一个嵌套
       // 的 `CallExpression`，而这个 `CallExpression` 又拥有自己的参数。
       //
       //   (add 2 (subtract 4 2))
@@ -494,8 +496,8 @@ function parser(tokens) {
       //     { type: 'name',   value: 'subtract' },
       //     { type: 'number', value: '4'        },
       //     { type: 'number', value: '2'        },
-      //     { type: 'paren',  value: ')'        }, <<< Closing parenthesis
-      //     { type: 'paren',  value: ')'        }, <<< Closing parenthesis
+      //     { type: 'paren',  value: ')'        }, <<< 闭合括号
+      //     { type: 'paren',  value: ')'        }, <<< 闭合括号
       //   ]
       //
       // 我们依赖 `walk` 函数来增加 current
@@ -521,16 +523,9 @@ function parser(tokens) {
     throw new TypeError(token.type);
   }
 
-  // 现在我们创建 1 个 `Program` AST 根节点
-  let ast = {
-    type: 'Program',
-    body: [],
-  };
-
   // 然后我们启动 `walk` 函数，推送 nodes 到 `ast.body`
   //
-  // 我们在1个循环里做的原因，是因为 `CallExpression` 可能是多个，且互不相关
-  // 注：`CallExpression` 是函数调用表达式的意思
+  // 我们在1个循环里做的原因，是因为 `CallExpression（函数调用表达式）` 可能是多个，且互不相关
   //
   //   (add 2 2)
   //   (subtract 4 2)
@@ -551,7 +546,10 @@ function parser(tokens) {
  */
 
 /**
- * 现在我们有AST了，并且我们我们可以用访问者模式来访问不同的 node 节点，当我们遇到匹配的 type 时，调用 visitor 上不同的方法
+ * 现在我们有AST了，并且我们可以用访问者模式来访问不同的 node 节点，
+ * 当我们遇到匹配的 type 时，调用 visitor 上不同的方法，
+ * 访问者模式是一种数据操作与数据操作分离的设计模式，
+ * 如下方，我们需要在 enter、exit中处理节点
  *
  *   traverse(ast, {
  *     Program: {
@@ -583,18 +581,18 @@ function parser(tokens) {
  *   });
  */
 
-// 所以我们定义1个 traverser 函数来接收 AST 和 1个visitor，里面我们将要定义两个函数
+// 我们定义 traverser 函数来接收 AST 和 1个visitor，里面我们将要定义两个函数
 function traverser(ast, visitor) {
 
-  // 1个 `traverseArray` 函数将允许我们遍历数组，我们下面还要定义 1 个 `traverseNode` 函数
+  // `traverseArray` 函数将允许我们遍历数组，我们下面还要定义 1 个 `traverseNode` 函数
   function traverseArray(array, parent) {
     array.forEach(child => {
       traverseNode(child, parent);
     });
   }
 
-  // `traverseNode` 将接收 1 个 node 节点和它们的父 node
-  // 可以把它们两个传递给我们的 visitor 方法
+  // `traverseNode` 将接收 node 节点和它们的父 node 节点
+  // 可以把它们两个作为参数传递给我们的 visitor 方法，也就是
   function traverseNode(node, parent) {
 
     // 初始时，看看node type是否有对应的 visitor 方法
@@ -608,7 +606,7 @@ function traverser(ast, visitor) {
     // 接下来，我们根据当前 node type 的不同，需要区别处理
     switch (node.type) {
 
-      // 开始时，最顶层的结构是 `Program`，它有 1 个名为 `body` 的属性，
+      // 开始时，最顶层的结构是 `Program`，它有名为 `body` 的属性，
       // 我们使用 `traverseArray` 递归处理所有子节点
       case 'Program':
         traverseArray(node.body, node);
@@ -678,26 +676,24 @@ function traverser(ast, visitor) {
  *                                    |             type: 'NumberLiteral',
  *                                    |             value: '2'
  *                                    |           }]
- *  (sorry the other one is longer.)  |         }
+ *                                    |         }
  *                                    |       }
  *                                    |     }]
  *                                    |   }
  * ----------------------------------------------------------------------------
  */
 
-// 所以我们的 `transformer` 函数接收 lisp AST
+// 定义 `transformer` 函数接收 Lisp AST
 function transformer(ast) {
 
-  // We'll create a `newAst` which like our previous AST will have a program
-  // node.
-  // 我们创建 1 个 `newAst`，像前面的 AST 一样，有个 Program 的根节点
+  // 我们创建 `newAst`，像前面的 AST 一样，都有 Program 类型的根节点
   let newAst = {
     type: 'Program',
     body: [],
   };
 
-  // 接下来我们做 1 个的小小的 hack 写法，我们在旧 AST 上挂 1 个 _content 方法，用来存储新 AST 的引用，
-  // 只要记住它是一个引用就行了，通常可以有更好的抽象方法，这里我们尽量有简单的方法处理
+  // 接下来我们做 hack 写法，我们在旧 AST 上挂 1 个 _content 方法，用来存储新 AST 的引用，
+  // 只要记住它是一个引用就行了，通常可以有更好的抽象方法，这里我们尽量用简单的方法处理
   ast._context = newAst.body;
 
   // 我们调用 traverser 函数，用 ast、visitor 函数作为参数
@@ -725,10 +721,10 @@ function transformer(ast) {
       },
     },
 
-    // 现在轮到 `CallExpression` 了
+    // 现在轮到 `CallExpression`
     CallExpression: {
       enter(node, parent) {
-        // 我们创建 1 个新语言的 `CallExpression` 表达式结构
+        // 我们创建新语言的 `CallExpression` 表达式结构
         let expression = {
           type: 'CallExpression',
           callee: {
@@ -738,11 +734,10 @@ function transformer(ast) {
           arguments: [],
         };
 
-        // 现在我们定义 1 个新的 _context 在原始 `CallExpression` node 上，将想转换的 node 节点 expression.arguments 挂载上去
+        // 现在我们定义新的 _context 在原始 `CallExpression` node 上，将想转换的 node 节点 expression.arguments 挂载上去
         node._context = expression.arguments;
 
         // 那么，我们确认一下父节点是否是 `CallExpression`
-        // 如果不是的话...
         if (parent.type !== 'CallExpression') {
 
           // 我们用 `ExpressionStatement` node 包裹 `CallExpression` node，
@@ -753,7 +748,7 @@ function transformer(ast) {
           }; 
         }
 
-        // 最后我们推送 `CallExpression` 到父节点的 _context 中，当然，它的父节点可能就是另一个函数调用
+        // 最后我们推送 `CallExpression` 到父节点的 _context 中，它的父节点可能是另一个函数调用
         parent._context.push(expression);
       },
     }
@@ -771,20 +766,20 @@ function transformer(ast) {
  */
 
 /**
- * 现在让我们聚焦在最后一步：代码生成
- * 我们递归调用它自身的所有子节点，最终通过 AST 树生成 1 个巨大的字符串
+ * 现在让我们看最后一步：代码生成
+ * 递归调用它自身的所有子节点，最终通过 AST 树生成目标字符串
  */
 
 function codeGenerator(node) {
 
   switch (node.type) {
 
-    // 如果是 1 个 `Program` 根 node. 我们遍历所有的子节点
+    // 如果是 `Program` 根节点. 我们遍历其所有的子节点
     case 'Program':
       return node.body.map(codeGenerator)
         .join('\n');
 
-    // `ExpressionStatement` 是包裹层，我们在最后面加 1 个 `;`，继续处理它的 expression
+    // `ExpressionStatement` 是包裹层，我们在最后面加 1 个 `;`，继续处理它的表达式体
     case 'ExpressionStatement':
       return (
         codeGenerator(node.expression) +
@@ -827,7 +822,7 @@ function codeGenerator(node) {
  */
 
 /**
- * 最终，我们创造了 `compiler（编译器）` 函数.
+ * 最终，我们创建 1 个 `compiler（编译器）` 函数
  * 这里，我们用这样的路径将它们串起来，这样更加直观
  *
  *   1. input  => tokenizer   => tokens
@@ -842,7 +837,6 @@ function compiler(input) {
   let newAst = transformer(ast);
   let output = codeGenerator(newAst);
 
-  // and simply return the output!
   return output;
 }
 

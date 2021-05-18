@@ -1,4 +1,3 @@
-***欢迎来到 The Super Tiny Compiler!***
 
 > 这是 [the-super-tiny-compiler](https://github.com/jamiebuilds/the-super-tiny-compiler) 的中文版本
 
@@ -7,8 +6,6 @@
 注释代码将帮助你学习*大部分*编译器是如何从头到尾工作的
 
  [想要看完整代码？点击这里](./the-super-tiny-compiler.js)
-
----
 
 ### 我为什么要知道编译器(compiler)是如何工作的呢？
 
